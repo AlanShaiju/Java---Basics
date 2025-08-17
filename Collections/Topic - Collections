@@ -1,11 +1,106 @@
 Collections Framework:
 -> Collections interfaces hierarchy: Collections, List, Queue, Dequeue, Map
 
+The root interfaces are divided into two main branches:
+
+Collection Interface (java.util.Collection) → represents a group of objects.
+Subinterfaces: List, Set, Queue, Deque
+
+Map Interface (java.util.Map) → represents key-value pairs.
+Independent from Collection, but part of the framework.
+
+1. Collection (root interface)
+
+Superinterface for most collections (except Map).
+Defines basic operations: add(), remove(), size(), iterator().
+
+2. List (ordered collection, allows duplicates)
+
+Maintains insertion order.
+Allows duplicate elements.
+Access elements by index.
+Implementations:
+ArrayList → resizable array, fast random access.
+LinkedList → doubly linked list, fast insertion/deletion.
+Vector → synchronized version (legacy).
+Stack → subclass of Vector, LIFO stack.
+
+3. Set (unordered collection, no duplicates)
+
+Does not allow duplicate elements.
+No index-based access.
+Implementations:
+HashSet → backed by hash table, no order.
+LinkedHashSet → maintains insertion order.
+TreeSet → sorted set (Red-Black tree).
+
+4. Queue (FIFO ordering, except priority rules)
+
+Used to hold elements before processing.
+Typically FIFO (First In, First Out).
+Implementations:
+PriorityQueue → elements ordered by priority (natural order or comparator).
+LinkedList → can also act as a queue.
+
+5. Deque (Double-Ended Queue)
+
+A subtype of Queue.
+Allows insertion and removal from both ends.
+Implementations:
+ArrayDeque → resizable array, efficient stack & queue.
+LinkedList → also implements Deque.
+
+6. Map (key-value pairs, no duplicate keys)
+
+Not a child of Collection.
+Maps unique keys to values.
+Implementations:
+HashMap → stores entries in hash table (no order).
+LinkedHashMap → maintains insertion order.
+TreeMap → sorted by keys (Red-Black tree).
+Hashtable → synchronized legacy version.
+
 List Implementations:
 
 -> ArrayList vs LinkedList (use cases, time complexities)
--> Vector and Stack (legacy classes)
+
+| Feature                   | **ArrayList**                                                                                      | **LinkedList**                                                                                         |
+| ------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Internal structure**    | Dynamic **array**                                                                                  | Doubly **linked list**                                                                                 |
+| **Access (get by index)** | O(1) → fast random access                                                                          | O(n) → must traverse                                                                                   |
+| **Insertion at end**      | Amortized O(1)                                                                                     | O(1)                                                                                                   |
+| **Insertion in middle**   | O(n) (shifts elements)                                                                             | O(1) (if position known via iterator)                                                                  |
+| **Deletion at end**       | O(1)                                                                                               | O(1)                                                                                                   |
+| **Deletion in middle**    | O(n) (shift elements)                                                                              | O(1) (if node known)                                                                                   |
+| **Memory usage**          | Compact (just elements array)                                                                      | Extra memory for pointers (prev/next)                                                                  |
+| **Use cases**             | - Frequent **access by index** <br> - Read-heavy operations <br> - Example: lookup tables, caching | - Frequent **insertions/deletions** <br> - Write-heavy operations <br> - Example: queues, undo history |
+
+
+Vector
+
+Grows like an ArrayList but thread-safe (all methods synchronized).
+Slower than ArrayList in single-threaded apps due to synchronization overhead.
+Mostly replaced by ArrayList (unless synchronization is explicitly needed).
+
+Stack
+
+Extends Vector.
+Implements LIFO (Last-In-First-Out) stack with push(), pop(), peek().
+Considered legacy → better to use Deque (ArrayDeque) for modern stack implementations.
+
 -> CopyOnWriteArrayList (thread-safe)
+
+Part of java.util.concurrent.
+A thread-safe version of ArrayList.
+Works by making a new copy of the array whenever you modify it (add, set, remove).
+Characteristics:
+Read operations: O(1), very fast (no locks needed).
+Write operations: O(n), since it copies the whole list.
+Iterators are fail-safe (they iterate over a snapshot, no ConcurrentModificationException).
+Use cases:
+Best when:
+Reads >> Writes (many reads, very few writes).
+Example: maintaining a read-mostly configuration list or listeners in event systems.
 
 Set Implementations:
 
