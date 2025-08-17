@@ -1,0 +1,31 @@
+Collections Framework:
+-> Collections interfaces hierarchy: Collections, List, Queue, Dequeue, Map
+
+List Implementations:
+
+-> ArrayList vs LinkedList (use cases, time complexities)
+-> Vector and Stack (legacy classes)
+-> CopyOnWriteArrayList (thread-safe)
+
+Set Implementations:
+
+-> HashSet vs LinkedHashSet vs TreeSet {use cases, ordering behaviour}
+-> How does hashset work, what is hashcode and equals contract
+
+Queue and Dequeue Implementations:
+
+-> PriorityQueue
+-> ArrayDeque
+
+Map Implementations:
+
+-> HashMap vs LinkedHashMap vs TreeMap
+-> Hashtable (legacy)
+-> ConcurrentHashMap basics
+
+Iterator and ListIterator interfaces
+How equals() and hashCode() affects collections
+Difference between comparable and comparator interfaces
+Sorting collectionswith Collections.sort() and Comparator
+Synchronization and thread-safe collections. 
+
