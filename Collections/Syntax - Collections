@@ -1,0 +1,157 @@
+                Iterable (interface)
+                     │
+               Collection (interface)
+   ┌──────────────┼───────────────┐───────────────┐──────────────
+   │              │               │               │
+  List           Set             Queue           Deque
+   │              │               │               │
+   │              │               │               │
+ ArrayList     HashSet        PriorityQueue    ArrayDeque
+ LinkedList    LinkedHashSet  LinkedList       LinkedList
+ Vector        TreeSet                         (also implements Queue)
+   │
+ Stack
+ CopyOnWriteArrayList
+
+
+                     Map (interface)
+   ┌───────────────────┼─────────────────────┐─────────────────┐
+   │                   │                     │                 │
+ HashMap         LinkedHashMap            TreeMap           Hashtable
+   │
+ ConcurrentHashMap
+
+
+
+
+
+List Implementations:
+
+// List interface
+List<String> list = new ArrayList<>();
+
+// ArrayList
+ArrayList<String> arrayList = new ArrayList<>();
+
+// LinkedList
+LinkedList<String> linkedList = new LinkedList<>();
+
+// Vector (legacy, synchronized)
+Vector<String> vector = new Vector<>();
+
+// Stack (legacy, extends Vector)
+Stack<String> stack = new Stack<>();
+
+Set Implementations:
+
+// Set interface
+Set<String> set = new HashSet<>();
+
+// HashSet
+HashSet<String> hashSet = new HashSet<>();
+
+// LinkedHashSet (insertion order maintained)
+LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
+
+// TreeSet (sorted order)
+TreeSet<String> treeSet = new TreeSet<>();
+
+
+Queue Iplementations:
+
+// Queue interface
+Queue<String> queue = new LinkedList<>();
+
+// LinkedList as Queue
+LinkedList<String> queueLinkedList = new LinkedList<>();
+
+// PriorityQueue (min-heap by default)
+PriorityQueue<String> priorityQueue = new PriorityQueue<>();
+
+
+Deque Implementations:
+
+// Deque interface
+Deque<String> deque = new ArrayDeque<>();
+
+// ArrayDeque
+ArrayDeque<String> arrayDeque = new ArrayDeque<>();
+
+// LinkedList as Deque
+LinkedList<String> dequeLinkedList = new LinkedList<>();
+
+
+Map Implementations:
+
+// Map interface
+Map<Integer, String> map = new HashMap<>();
+
+// HashMap
+HashMap<Integer, String> hashMap = new HashMap<>();
+
+// LinkedHashMap (insertion order maintained)
+LinkedHashMap<Integer, String> linkedHashMap = new LinkedHashMap<>();
+
+// TreeMap (sorted order of keys)
+TreeMap<Integer, String> treeMap = new TreeMap<>();
+
+// Hashtable (legacy, synchronized)
+Hashtable<Integer, String> hashtable = new Hashtable<>();
+
+
+Concurrent Collections:
+
+// CopyOnWriteArrayList (read-heavy, write-light)
+CopyOnWriteArrayList<String> cowList = new CopyOnWriteArrayList<>();
+
+// ConcurrentHashMap
+ConcurrentHashMap<Integer, String> concurrentHashMap = new ConcurrentHashMap<>();
+
+Summary / Quick Usage:
+Use ArrayList for fast random access.
+Use LinkedList for frequent insert/remove.
+Use HashSet for unique, unordered elements.
+Use LinkedHashSet for insertion order.
+Use TreeSet for sorted elements.
+Use PriorityQueue for priority-based retrieval.
+Use ArrayDeque for stack/queue operations.
+Use HashMap for fast key-value pairs.
+Use LinkedHashMap for predictable iteration.
+Use TreeMap for sorted keys.
+Use ConcurrentHashMap or CopyOnWriteArrayList for thread safety.
+
+
+
+
+1. Collection Hierarchy
+
+Collection:
+    List
+        ArrayList
+        LinkedList (also implements Deque, Queue)
+        Vector (legacy, synchronized)
+                Stack (extends Vector, LIFO)
+        CopyOnWriteArrayList (thread-safe, concurrent)
+    Set
+        HashSet
+                LinkedHashSet (insertion order)
+        TreeSet (sorted set, uses NavigableSet)
+    Queue
+        LinkedList (FIFO queue, also Deque)
+        PriorityQueue (priority-based ordering)
+    Deque
+        ArrayDeque (double-ended queue)
+        LinkedList (also works as deque)
+
+2. Map Hierarchy
+
+Map
+  HashMap
+    LinkedHashMap (insertion order)
+    ConcurrentHashMap (thread-safe, concurrent)
+  TreeMap (sorted order of keys, uses NavigableMap)
+  Hashtable (legacy, synchronized)
+
+🔹 Legacy vs Modern
+Legacy: Vector, Stack, Hashtable.
+Modern: ArrayList, LinkedList, HashSet, HashMap, TreeSet, ConcurrentHashMap, CopyOnWriteArrayList.
