@@ -1,0 +1,140 @@
+Stage 2 — Synchronization & concurrency
+9) synchronized / concurrent / concurrency / parallelism
+
+Concurrency: dealing with multiple tasks at once (they may interleave).
+
+Parallelism: actually running at the same time (needs multiple cores).
+
+Synchronized (adjective): code that uses locks to make shared data safe.
+
+Concurrent (adjective): designed for multi-thread use (e.g., ConcurrentHashMap).
+
+10) synchronization in Java (intrinsic locks/monitors)
+
+synchronized provides:
+
+Mutual exclusion (only one thread in the critical section)
+
+Visibility / ordering (establishes a happens-before relationship)
+
+Two forms:
+
+Method level: public synchronized void inc() { ... } (lock = this)
+
+Block level: synchronized(lockObj) { ... } (lock = lockObj you choose)
+
+class Counter {
+    private int n = 0;
+    public void inc() {
+        synchronized (this) { n++; }
+    }
+    public int get() {
+        synchronized (this) { return n; }
+    }
+}
+
+
+Reentrancy: a thread holding a lock can re-enter the same lock.
+
+11) rules of synchronization (practical do’s & don’ts)
+
+Lock the same object from all places that guard the same data.
+
+Keep critical sections small—do only what’s needed while holding the lock.
+
+Never synchronize on:
+
+String literals or boxed numbers (shared/interned by JVM)
+
+Objects you don’t control (could cause external deadlocks)
+
+Always use while with wait() (handle spurious wakeups):
+
+synchronized (lock) {
+    while (!condition) lock.wait();
+    // do work
+}
+
+
+Prefer notifyAll() (avoid missed notifications when multiple waiters).
+
+Always release locks; for explicit locks, use try/finally.
+
+Consider higher-level utilities (java.util.concurrent) before hand-rolled wait/notify.
+
+12) volatile vs synchronized (how/when/why)
+
+volatile field:
+
+Guarantees visibility (reads see the latest write).
+
+Imposes ordering around that variable.
+
+Does not make composite operations atomic (e.g., count++ isn’t safe).
+
+Great for flags, one-writer/many-reader patterns.
+
+volatile boolean running = true;
+void stop() { running = false; }
+void loop() { while (running) { /* work */ } }
+
+
+synchronized:
+
+Provides visibility and mutual exclusion (atomicity for the protected region).
+
+Use when updating shared state across multiple steps.
+
+Atomics (AtomicInteger, etc.):
+
+Lock-free atomic operations (e.g., incrementAndGet()), often faster than synchronized for counters.
+
+13) race condition vs data race
+
+Race condition: program correctness depends on timing/order of operations. Symptom: sometimes it works; sometimes weird results.
+
+Data race (specific type): two+ threads access the same variable, at least one is a write, and there’s no proper synchronization (volatile/lock). This violates the Java Memory Model—reads may see stale or torn values.
+
+All data races are race conditions, but not every race condition is a data race (e.g., two threads append to a list in the wrong order using proper locks—still a logical race).
+
+14) thread starvation (and livelock)
+
+Starvation: a thread rarely/never gets CPU or resources.
+
+Causes: very high priority neighbors, unfair locks/queues, constantly arriving higher-priority work.
+
+Fixes: fair queues/locks, reduce contention, avoid long critical sections, avoid unbounded work on single threads.
+
+Livelock: threads keep reacting to each other and no one makes progress (they’re “too polite”). Fix by adding backoff or breaking symmetry.
+
+15) deadlocks
+
+Deadlock: two or more threads wait forever for each other’s locks/resources.
+
+Classic example:
+
+final Object A = new Object();
+final Object B = new Object();
+
+Thread t1 = new Thread(() -> {
+    synchronized (A) {
+        sleep(100);
+        synchronized (B) { }
+    }
+});
+Thread t2 = new Thread(() -> {
+    synchronized (B) {
+        sleep(100);
+        synchronized (A) { }
+    }
+});
+t1.start(); t2.start();
+
+
+Avoidance:
+
+Lock ordering: always acquire locks in the same global order.
+
+Timeouts: with tryLock(timeout) from ReentrantLock.
+
+Reduce shared state: prefer immutable data, message-passing, or higher-level concurrency utilities
