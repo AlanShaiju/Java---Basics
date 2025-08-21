@@ -1,0 +1,110 @@
+1) what is multitasking?
+
+Idea: doing more than one thing during the same period of time.
+
+Where it happens: mostly in the operating system (OS)—it switches the CPU between tasks very fast, giving the illusion of “at the same time.”
+
+Why it matters in Java: your program can ask the OS/JVM to run multiple tasks “in parallel” (truly parallel on multi-core CPUs, interleaved on single core).
+
+2) process-based vs thread-based multitasking
+
+Process: a running program with its own memory space. Heavyweight to create/switch.
+
+Thread: a lightweight worker inside a process. Threads share the process memory (heap, classes) but each has its own stack.
+
+Analogy: process = apartment; threads = people living in the same apartment (shared kitchen = shared memory).
+
+3) what is multithreading? threads vs processes
+
+Multithreading: having multiple threads in one process. Faster to create, faster to switch, and they can easily share data.
+
+Processes vs threads:
+
+Isolation: processes isolated; threads share memory (great power, great risk).
+
+Cost: process creation is expensive; thread creation is cheaper.
+
+Communication: processes use IPC (pipes, sockets); threads share variables (needs synchronization).
+
+4) basics of threads
+
+Two classic ways to define work:
+
+Implement Runnable (no return value)
+
+Starting a thread manually (you’ll later prefer executors):
+
+class MyTask implements Runnable {
+    public void run() {
+        System.out.println("Work on " + Thread.currentThread().getName());
+    }
+}
+public class StartThread {
+    public static void main(String[] args) {
+        Thread t = new Thread(new MyTask());
+        t.start();                 // NEVER call run() directly
+    }
+}
+
+
+Important: start() creates a new OS thread and calls run() on it. Calling run() yourself runs it on the current thread (not concurrent).
+
+5) thread states & transitions
+
+Java defines these states (from Thread.getState()):
+
+NEW – created but start() not called.
+
+RUNNABLE – eligible to run on CPU (includes “running”).
+
+BLOCKED – waiting to enter a synchronized block (monitor lock).
+
+WAITING – waiting indefinitely (e.g., Object.wait(), LockSupport.park(), join()).
+
+TIMED_WAITING – waiting with timeout (sleep(ms), wait(ms), join(ms)).
+
+TERMINATED – finished.
+
+Typical transitions:
+NEW -> RUNNABLE -> (BLOCKED/WAITING/TIMED_WAITING <-> RUNNABLE) -> TERMINATED
+
+Check with:
+
+Thread t = new Thread(() -> { /* work */ });
+System.out.println(t.getState()); // NEW
+t.start();
+System.out.println(t.getState()); // RUNNABLE/...
+
+6) thread joining
+
+What: one thread waits for another to finish.
+
+How: t.join() blocks the caller until t is TERMINATED.
+
+Thread t = new Thread(() -> doWork());
+t.start();
+t.join(); // main waits here until t completes
+System.out.println("t finished");
+
+
+Use cases: ensure ordering (e.g., load config before continuing), wait for background tasks.
+
+7) thread priority
+
+Range 1..10 (Thread.MIN_PRIORITY..Thread.MAX_PRIORITY), default 5.
+
+It’s only a hint to the scheduler; behavior is OS/JVM dependent.
+
+Rule: don’t rely on it for correctness; use it rarely.
+
+8) thread scheduler
+
+The OS and JVM decide which RUNNABLE thread runs next (preemptive scheduling, time slicing).
+
+You cannot control exact scheduling order.
+
+Thread.yield() is a weak hint; not reliable.
+
+Design for correctness without assuming any order.
+
+Implement Callable<T> (returns a value, can throw checked exceptions)
