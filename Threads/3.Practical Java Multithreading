@@ -1,0 +1,89 @@
+Stage 3 — Practical Java multithreading
+16) thread pool (why executors exist)
+
+Creating a thread per task doesn’t scale (slow, memory heavy).
+
+ExecutorService manages a pool of reusable threads + a queue of tasks.
+
+You submit tasks (Runnable/Callable), the pool assigns them to worker threads.
+
+ExecutorService pool = Executors.newFixedThreadPool(4);
+pool.execute(() -> doTask());
+pool.shutdown();
+
+17) configuring a thread pool (deep dive)
+
+Under the hood, the core implementation is ThreadPoolExecutor:
+
+ExecutorService pool = new ThreadPoolExecutor(
+    4,                       // corePoolSize: kept alive even if idle
+    8,                       // maximumPoolSize: cap when queue is full
+    60L, TimeUnit.SECONDS,   // keepAliveTime for extra threads
+    new ArrayBlockingQueue<>(100), // work queue (bounded!)
+    Executors.defaultThreadFactory(), // naming, daemon, priority
+    new ThreadPoolExecutor.AbortPolicy() // rejection when saturated
+);
+
+Choosing values (rules of thumb)
+
+Queue:
+
+Unbounded (LinkedBlockingQueue) → simple, but risks OOM if producers are faster than consumers. Often used with fixed pool.
+
+Bounded (ArrayBlockingQueue) → back-pressure; choose a size based on throughput/memory.
+
+SynchronousQueue → no queue; handoff tasks directly to threads; use with cached pools.
+
+Pool sizes:
+
+CPU-bound tasks: corePoolSize ≈ number of cores (e.g., Runtime.getRuntime().availableProcessors()).
+
+IO-bound tasks: you can go higher because threads wait on IO (e.g., ~ cores × 2..4, measure).
+
+Rejection policies:
+
+AbortPolicy (default): throws RejectedExecutionException.
+
+CallerRunsPolicy: submitter runs the task (slows producers = back-pressure).
+
+DiscardPolicy / DiscardOldestPolicy: drop tasks (only if you can lose work).
+
+ThreadFactory:
+
+Name threads for debugging; decide daemon vs non-daemon.
+
+ThreadFactory named = r -> {
+    Thread t = new Thread(r);
+    t.setName("worker-" + t.getId());
+    t.setDaemon(false);
+    return t;
+};
+
+
+Shutdown: always call shutdown() (then awaitTermination) or shutdownNow() for an emergency stop.
+
+Specialized pools
+
+Executors.newFixedThreadPool(n) → fixed size + unbounded queue.
+
+Executors.newCachedThreadPool() → elastic (0..∞), uses SynchronousQueue.
+
+Executors.newSingleThreadExecutor() → single worker, tasks are serialized.
+
+ScheduledThreadPoolExecutor → delayed & periodic tasks (cron-like).
+
+18) how servlets handle multiple requests
+
+Servlet containers (Tomcat/Jetty/Undertow) keep a request thread pool.
+
+One HTTP request = one thread from that pool (simplified model).
+
+Your servlet instance is shared across threads:
+
+Don’t store request data in fields; use local variables only.
+
+If you must keep shared mutable state, make it thread-safe (synchronize, atomics, or concurrent collections).
+
+Async/non-blocking (Servlet 3.0+) lets a request free the container thread while waiting for IO; completion runs later.
+
+Tuning example (Tomcat): maxThreads, minSpareThreads, acceptCount control concurrency/queuing (configured in server, not in your code).
