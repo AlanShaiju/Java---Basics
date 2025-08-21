@@ -1,0 +1,138 @@
+Stage 4 — Advanced analysis
+19) thread dump analysis (what, how, how to read)
+What is a thread dump?
+
+A snapshot of all JVM threads: their names, states, stack traces, and held/waited locks. It’s your “X-ray” when the server is “hung” or “slow”.
+
+How to capture (safe in prod)
+
+jcmd <pid> Thread.print ← modern & reliable
+
+jstack <pid>
+
+Unix: kill -3 <pid> prints to stdout (e.g., catalina.out)
+
+Tools: JVisualVM/JConsole/IDE plugins can grab them.
+
+How to analyze
+
+Look for:
+
+Deadlocks – dumps often have a “Found one Java-level deadlock” section with involved threads and monitors.
+
+BLOCKED threads – many threads stuck on the same monitor? That’s a hotspot lock (contention).
+
+WAITING/TIMED_WAITING – normal if waiting on IO/timers; abnormal if everything is waiting on one resource.
+
+CPU hogs – correlate with OS tools (top -H on Linux, Task Manager on Windows) to find a thread ID (nid) consuming CPU, then find it in the dump by hex id.
+
+Thread names – good naming (via ThreadFactory) makes hotspots obvious (e.g., db-pool-3, http-nio-8080-exec-17).
+
+Stack traces – top frames show where each thread is stuck (e.g., DB driver, HTTP client, synchronized block).
+
+Reading a snippet (what to notice)
+"worker-12" #45 prio=5 os_prio=0 tid=0x... nid=0x2a03 runnable
+   java.lang.Thread.State: RUNNABLE
+   at com.myapp.Service.process(Service.java:128)
+   at java.util.concurrent.ThreadPoolExecutor.runWorker(...)
+   - locked <0x00000000cafe> (a java.lang.Object)
+
+
+Name: worker-12 (thanks, ThreadFactory!)
+
+State: RUNNABLE (using CPU)
+
+Lock info: which monitor is held/waited
+
+Stack: where time is spent
+
+Pro tip: take 3–5 dumps 5–10 seconds apart. If the same threads are stuck in the same place, you’ve got a real stall; if stacks move, it’s probably just load.
+
+Extra: ExecutorService in practice (API essentials)
+Submitting work
+ExecutorService pool = Executors.newFixedThreadPool(4);
+
+Future<Integer> f = pool.submit(() -> {
+    // Callable: returns a value
+    Thread.sleep(500);
+    return 42;
+});
+
+System.out.println(f.get());        // wait for result (or f.get(1, SECONDS))
+
+Fire-and-forget
+pool.execute(() -> doSomething());  // Runnable, no Future
+
+Many tasks at once
+List<Callable<Integer>> tasks = List.of(task1, task2, task3);
+List<Future<Integer>> results = pool.invokeAll(tasks); // waits for all
+Integer first = pool.invokeAny(tasks);                 // returns first success, cancels rest
+
+Managing lifecycle
+pool.shutdown();                         // stop accepting new tasks
+if (!pool.awaitTermination(30, TimeUnit.SECONDS)) {
+    pool.shutdownNow();                  // interrupt running tasks
+}
+
+Cancelling
+Future<?> f = pool.submit(() -> longWork());
+f.cancel(true);   // requests interruption; task must check Thread.interrupted()
+
+Practical patterns to keep you safe
+
+Prefer local variables inside threads/servlets; avoid shared mutable fields.
+
+Never block a container/request thread on long IO—use async or a separate executor.
+
+Use concurrent collections (ConcurrentHashMap, BlockingQueue) instead of manual synchronized + ArrayList.
+
+Measure & tune: start with a reasonable fixed pool (e.g., cores to 2×cores), add a bounded queue, and a CallerRunsPolicy to apply back-pressure.
+
+Name your threads with a ThreadFactory.
+
+Watch for leaks: always shutdown() executors created by your code.
+
+Log exceptions in tasks (uncaught exceptions in threads can vanish quietly if you don’t check Future).
+
+Tiny exercises (paste into Eclipse)
+
+Race condition demo (broken counter):
+
+class BrokenCounter {
+    static int c = 0;
+    public static void main(String[] a) throws Exception {
+        Runnable r = () -> { for (int i = 0; i < 100_000; i++) c++; };
+        Thread t1 = new Thread(r); Thread t2 = new Thread(r);
+        t1.start(); t2.start(); t1.join(); t2.join();
+        System.out.println("Expected 200000, got " + c); // usually less
+    }
+}
+
+
+Fixed with synchronized:
+
+class SafeCounter {
+    private int c = 0;
+    public synchronized void inc() { c++; }
+    public synchronized int get() { return c; }
+    public static void main(String[] a) throws Exception {
+        SafeCounter sc = new SafeCounter();
+        Runnable r = () -> { for (int i = 0; i < 100_000; i++) sc.inc(); };
+        Thread t1 = new Thread(r); Thread t2 = new Thread(r);
+        t1.start(); t2.start(); t1.join(); t2.join();
+        System.out.println(sc.get()); // 200000
+    }
+}
+
+
+Executor with Callable + timeout:
+
+ExecutorService pool = Executors.newFixedThreadPool(2);
+Future<String> f = pool.submit(() -> { Thread.sleep(1500); return "done"; });
+try {
+    System.out.println(f.get(1, TimeUnit.SECONDS));
+} catch (TimeoutException e) {
+    System.out.println("Timed out, cancelling...");
+    f.cancel(true);
+}
+pool.shutdown();
