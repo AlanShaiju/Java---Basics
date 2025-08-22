@@ -1,0 +1,10 @@
+Internet cache:
+-> temporary storage of internet files stored in the client machine
+-> allow for quicker access of commonly requested files
+-> images, videos, javascript, css, etc
+
+Internet cookies:
+-> temporary stoarage of textfiles stored by the server
+-> allows for auto-login, remeber passwords, session management, client tracking
+-> simple text files with typically hashed information the server uses
+
