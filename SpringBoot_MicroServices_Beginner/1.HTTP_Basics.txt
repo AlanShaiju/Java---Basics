@@ -1,0 +1,21 @@
+Network is a system where devices are connected between each other. WWW (World Wide Web) is like a gloabal collection of computers that are interconnected with each other. 
+
+HTTP( HYPERTEXT TRANSFER PROTOCOL) - Set of rules that determine how computers can talk to each other. 
+
+Client --- Request ---> Server
+Server --- Response ---> Server  ( server responses are always in status codes, if it has the content then it sends that data as well.)
+
+Status Codes:
+
+1xx : Informational
+2xx : Success (eg. 200)
+3xx : Redirection
+4xx : Client Error (eg. 404 Page not found)
+5xx : Server Error
+
+HTTP Request is sent via a header. It is based on the TCP/IP protocol. 
+
+IP(Internet Protocol) Address in a system/network must be unique for all devices in the network. 
+IPv4 : 32 bit addresses
+IPv6 : 128 bit addresses
+DNS maps a domain name with an IP address
