@@ -19,3 +19,15 @@ IP(Internet Protocol) Address in a system/network must be unique for all devices
 IPv4 : 32 bit addresses
 IPv6 : 128 bit addresses
 DNS maps a domain name with an IP address
+
+HTTP Methods
+
+GET, POST, PUT, DELETE
+
+GET - fetch data from server
+PUT/POST - create and update resource, POST -> Create, PUT -> update, GET -> read/fetch data, DELETE -> delete data
+
+Safe methods: real time data in server is not modified. {GET}
+Unsafe methods: edits the real time data. {PUT,POST,DELETE}
+
+An idempotent method is an HTTP method that, when called multiple times with the same input, produces the same effect on the server's state as if it were called only once. 
