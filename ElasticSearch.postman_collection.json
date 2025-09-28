@@ -1,0 +1,743 @@
+{
+	"info": {
+		"_postman_id": "0c152d47-2f2a-45b5-93e8-52fe60d877ab",
+		"name": "ElasticSearch",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48846019",
+		"_collection_link": "https://alanshaiju263-6068736.postman.co/workspace/Alan-Shaiju's-Workspace~8cf8496a-3ae7-4d54-80a0-a4ead8f3cf66/collection/48846019-0c152d47-2f2a-45b5-93e8-52fe60d877ab?action=share&source=collection_link&creator=48846019"
+	},
+	"item": [
+		{
+			"name": "Simple Search",
+			"item": [
+				{
+					"name": "Searching for aloe",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/search?keyword=aloe",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "aloe"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Searching for lipstick",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/search?keyword=lipstick",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "lipstick"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Searching for perfume",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/search?keyword=perfume",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "perfume"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Searching for herbal",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/search?keyword=herbal",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "herbal"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Searching for shampoo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/search?keyword=shampoo",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "shampoo"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Faceted Search",
+			"item": [
+				{
+					"name": "Search lipsticks in Makeup category, brand LuxeGlow, color red",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/faceted-search?keyword=lipstick&category=Makeup&brand=LuxeGlow&color=red",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"faceted-search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "lipstick"
+								},
+								{
+									"key": "category",
+									"value": "Makeup"
+								},
+								{
+									"key": "brand",
+									"value": "LuxeGlow"
+								},
+								{
+									"key": "color",
+									"value": "red"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search by multiple brands and colors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/faceted-search?brand=PureBeauty&brand=RadiantSkin&color=black&color=pink",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"faceted-search"
+							],
+							"query": [
+								{
+									"key": "brand",
+									"value": "PureBeauty"
+								},
+								{
+									"key": "brand",
+									"value": "RadiantSkin"
+								},
+								{
+									"key": "color",
+									"value": "black"
+								},
+								{
+									"key": "color",
+									"value": "pink"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Skincare products with price between 50–120",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/faceted-search?category=Skincare&priceMin=50&priceMax=120",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"faceted-search"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "Skincare"
+								},
+								{
+									"key": "priceMin",
+									"value": "50"
+								},
+								{
+									"key": "priceMax",
+									"value": "120"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fragrance with rating above 4",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/faceted-search?category=Fragrance&ratingMin=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"faceted-search"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "Fragrance"
+								},
+								{
+									"key": "ratingMin",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bodycare in HerbalAura or GlamEssence, colors white or green, rating 3–5",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/faceted-search?category=Bodycare&brand=HerbalAura&brand=GlamEssence&color=white&color=green&ratingMin=3&ratingMax=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"faceted-search"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "Bodycare"
+								},
+								{
+									"key": "brand",
+									"value": "HerbalAura"
+								},
+								{
+									"key": "brand",
+									"value": "GlamEssence"
+								},
+								{
+									"key": "color",
+									"value": "white"
+								},
+								{
+									"key": "color",
+									"value": "green"
+								},
+								{
+									"key": "ratingMin",
+									"value": "3"
+								},
+								{
+									"key": "ratingMax",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Synonym Search",
+			"item": [
+				{
+					"name": "Moisturizer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/synonym-search?keyword=moisturizer",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"synonym-search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "moisturizer"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fragrance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/synonym-search?keyword=fragrance",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"synonym-search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "fragrance"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Serum",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/synonym-search?keyword=serum",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"synonym-search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "serum"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Foundation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/synonym-search?keyword=foundation",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"synonym-search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "foundation"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cleanser",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/synonym-search?keyword=cleanser",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"synonym-search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "cleanser"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Enhanced Search",
+			"item": [
+				{
+					"name": "Aloe skincare with pagination",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/enhanced-search?keyword=white&category=Skincare&limit=5&offset=0",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"enhanced-search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "white"
+								},
+								{
+									"key": "category",
+									"value": "Skincare"
+								},
+								{
+									"key": "limit",
+									"value": "5"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Multiple brands + colors + price range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/enhanced-search?category=Makeup&brands=PureBeauty&brands=VelourCosmetics&colors=red&colors=pink&priceMin=30&priceMax=80",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"enhanced-search"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "Makeup"
+								},
+								{
+									"key": "brands",
+									"value": "PureBeauty"
+								},
+								{
+									"key": "brands",
+									"value": "VelourCosmetics"
+								},
+								{
+									"key": "colors",
+									"value": "red"
+								},
+								{
+									"key": "colors",
+									"value": "pink"
+								},
+								{
+									"key": "priceMin",
+									"value": "30"
+								},
+								{
+									"key": "priceMax",
+									"value": "80"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Perfume search with keyword + brand + price",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/enhanced-search?keyword=perfume&category=Fragrance&brands=GlamEssence&priceMax=150",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"enhanced-search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "perfume"
+								},
+								{
+									"key": "category",
+									"value": "Fragrance"
+								},
+								{
+									"key": "brands",
+									"value": "GlamEssence"
+								},
+								{
+									"key": "priceMax",
+									"value": "150"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Haircare products under LuxeGlow brand, rating 4–5",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/enhanced-search?category=Haircare&brands=LuxeGlow&ratingMin=4&ratingMax=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"enhanced-search"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "Haircare"
+								},
+								{
+									"key": "brands",
+									"value": "LuxeGlow"
+								},
+								{
+									"key": "ratingMin",
+									"value": "4"
+								},
+								{
+									"key": "ratingMax",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "HerbalAura or RadiantSkin skincare, color white or green, rating 3–5, pagination",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/products/enhanced-search?category=Skincare&brands=HerbalAura&brands=RadiantSkin&colors=white&colors=green&ratingMin=3&ratingMax=5&limit=10&offset=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"enhanced-search"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "Skincare"
+								},
+								{
+									"key": "brands",
+									"value": "HerbalAura"
+								},
+								{
+									"key": "brands",
+									"value": "RadiantSkin"
+								},
+								{
+									"key": "colors",
+									"value": "white"
+								},
+								{
+									"key": "colors",
+									"value": "green"
+								},
+								{
+									"key": "ratingMin",
+									"value": "3"
+								},
+								{
+									"key": "ratingMax",
+									"value": "5"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
