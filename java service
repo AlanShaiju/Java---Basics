@@ -1,0 +1,100 @@
+
+    @Test
+    void saveResourceType_success() {
+
+        // ===== DTO =====
+        ResourceTypeDTO dto = new ResourceTypeDTO();
+
+        TopicDTO topicDTO = new TopicDTO();
+        topicDTO.setTopicId(1);
+        dto.setTopic(topicDTO);
+
+        ResourceTypeActionDTO action1 = new ResourceTypeActionDTO();
+        action1.setName("A");
+        action1.setVisibility("V");
+
+        ResourceTypeActionDTO action2 = new ResourceTypeActionDTO();
+        action2.setName("B");
+        action2.setVisibility("V");
+
+        dto.setResourceTypeActions(Set.of(action1, action2));
+
+        U2RRelationDTO relationDTO = new U2RRelationDTO();
+        relationDTO.setRelationName("R");
+        relationDTO.setVisibility("V");
+        relationDTO.setU2RRelationActions(Set.of(action1, action2));
+
+        dto.setU2RRelations(Set.of(relationDTO));
+        dto.setR2RRelations(Set.of());
+
+        // ===== MOCKS =====
+        when(topicRepository.findById(anyInt()))
+                .thenReturn(Optional.of(new Topic()));
+
+        when(resourceTypeRepository.existsByCodeOrNameAndTopicId(any(), any(), any()))
+                .thenReturn(false);
+
+        when(resourceTypeRepository.countByIdInAndTopicId(any(), anyInt()))
+                .thenReturn(0);
+
+        when(resourceTypeMapper.saveResourceTypeDTOToEntity(any(), any()))
+                .thenReturn(new ResourceType());
+
+        when(resourceTypeRepository.save(any()))
+                .thenReturn(new ResourceType());
+
+        ResourceTypeAction a1 = new ResourceTypeAction();
+        a1.setName("A");
+
+        ResourceTypeAction a2 = new ResourceTypeAction();
+        a2.setName("B");
+
+        when(resourceTypeActionRepository.saveAll(any()))
+                .thenReturn(List.of(a1, a2));
+
+        when(resourceTypeActionMapper.entityToDTO(any()))
+                .thenReturn(new ResourceTypeActionDTO());
+
+        U2RRelation relationEntity = new U2RRelation();
+        relationEntity.setRelation("R");
+
+        when(u2RRelationRepository.saveAll(any()))
+                .thenReturn(List.of(relationEntity));
+
+        when(u2RRelationMapper.u2RRelationDTOToU2RRelationEntity(any(), any()))
+                .thenAnswer(invocation -> {
+                    U2RRelationDTO d = invocation.getArgument(0);
+                    U2RRelation r = new U2RRelation();
+                    r.setRelation(d.getRelationName());
+                    return r;
+                });
+
+        when(u2RRelationActionMapper.toEntity(any(), any()))
+                .thenReturn(new U2RRelationActionMapping());
+
+        when(u2RRelationActionRepository.saveAll(any()))
+                .thenReturn(List.of(new U2RRelationActionMapping()));
+
+        when(r2RRelationRepository.saveAll(any()))
+                .thenReturn(Collections.emptyList());
+
+        when(environment.getProperty("tenant.name"))
+                .thenReturn("test");
+
+        when(tenantRepository.findByName(anyString()))
+                .thenReturn(new Tenant());
+
+        when(resourceTypeMapper.toDTO(any(), any(), any(), any(), any()))
+                .thenReturn(new ResourceTypeDTO());
+
+        // ===== EXECUTE =====
+        ResourceTypeDTO result = resourceTypeService.saveResourceType(dto);
+
+        // ===== ASSERT =====
+        assertNotNull(result);
+
+        // ===== VERIFY =====
+        verify(resourceTypeRepository).save(any());
+        verify(resourceTypeActionRepository).saveAll(any());
+        verify(u2RRelationRepository).saveAll(any());
+    }
