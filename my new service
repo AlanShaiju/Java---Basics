@@ -180,4 +180,69 @@ private void syncU2RRelations(ResourceType db, ResourceTypeDTO dto) {
 }
 
 
-r2RRelationMapper.createR2RRelationEntity(...)
+r2RRelationMapper.createR2RRelationEntity(..
+
+
+
+private void syncR2RRelations(ResourceType db, ResourceTypeDTO dto) {
+
+    // ===== EXISTING MAP =====
+    Map<Integer, R2RRelation> dbMap =
+            Stream.concat(
+                    db.getSourceR2RRelations().stream(),
+                    db.getTargetR2RRelations().stream()
+            ).collect(Collectors.toMap(R2RRelation::getId, Function.identity()));
+
+    List<R2RRelationDTO> incoming = dto.getR2RRelations();
+
+    // ===== UPDATE EXISTING =====
+    incoming.stream()
+            .filter(r -> r.getRelationId() != null)
+            .forEach(r -> {
+                R2RRelation entity = dbMap.get(r.getRelationId());
+                if (entity != null) {
+                    entity.setRelation(r.getRelationName());
+                    entity.setDescription(r.getDescription());
+                }
+            });
+
+    // ===== ADD NEW =====
+    List<R2RRelation> toAdd = incoming.stream()
+            .filter(r -> r.getRelationId() == null)
+            .map(r -> {
+
+                ResourceType target = resourceTypeRepository.getReferenceById(
+                        r.getResourceTypeDetail().getResourceTypeId()
+                );
+
+                if (r.getIsSource()) {
+                    return r2RRelationMapper.createR2RRelationEntity(
+                            r,
+                            db,
+                            target
+                    );
+                } else {
+                    return r2RRelationMapper.createR2RRelationEntity(
+                            r,
+                            target,
+                            db
+                    );
+                }
+            })
+            .toList();
+
+    r2RRelationRepository.saveAll(toAdd);
+
+    // ===== DELETE REMOVED =====
+    Set<Integer> incomingIds = incoming.stream()
+            .filter(r -> r.getRelationId() != null)
+            .map(R2RRelationDTO::getRelationId)
+            .collect(Collectors.toSet());
+
+    List<R2RRelation> toDelete =
+            dbMap.values().stream()
+                    .filter(r -> !incomingIds.contains(r.getId()))
+                    .toList();
+
+    r2RRelationRepository.deleteAll(toDelete);
+}
