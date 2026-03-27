@@ -1,3 +1,15 @@
+MOCK_RESOURCE_TYPE.setResourceTypeActions(new HashSet<>());
+MOCK_RESOURCE_TYPE.setU2RRelations(new HashSet<>());
+MOCK_RESOURCE_TYPE.setSourceR2RRelations(new HashSet<>());
+MOCK_RESOURCE_TYPE.setTargetR2RRelations(new HashSet<>());
+MOCK_RESOURCE_TYPE.setResourceTypeConfigs(new HashSet<>());
+
+
+
+
+
+
+
 @Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
 @DisplayName("updateResourceType should return updated response for valid input")
 @Test
