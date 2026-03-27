@@ -140,46 +140,42 @@ private void syncActions(ResourceType dbResourceType, ResourceTypeDTO request) {
 }
 
 
-private void syncActions(ResourceType dbResourceType, ResourceTypeDTO request) {
+private void syncU2RRelations(ResourceType dbResourceType, ResourceTypeDTO request) {
 
-    Map<Integer, ResourceTypeAction> dbMap =
-            dbResourceType.getResourceTypeActions().stream()
-                    .collect(Collectors.toMap(ResourceTypeAction::getId, Function.identity()));
+    Map<Integer, U2RRelation> dbMap =
+            dbResourceType.getU2RRelations().stream()
+                    .collect(Collectors.toMap(U2RRelation::getId, Function.identity()));
 
     Set<Integer> incomingIds = new HashSet<>();
 
-    for (ResourceTypeActionDTO dto : request.getResourceTypeActions()) {
+    for (U2RRelationDTO dto : request.getU2RRelations()) {
 
-        if (dto.getActionId() != null) {
-            ResourceTypeAction entity = dbMap.get(dto.getActionId());
+        if (dto.getRelationId() != null) {
+            U2RRelation entity = dbMap.get(dto.getRelationId());
 
             if (entity == null) {
                 throw new PolicyAdministrationPointServiceException(
-                        "Action not found", "ACTION_NOT_FOUND",
-                        HttpStatus.NOT_FOUND, dto.getActionId()
+                        "U2R relation not found", "U2R_NOT_FOUND",
+                        HttpStatus.NOT_FOUND, dto.getRelationId()
                 );
             }
 
-            entity.setName(dto.getName());
             entity.setDescription(dto.getDescription());
-            entity.setVisibility(ResourceTypeActionVisibility.valueOf(dto.getVisibility()));
+            entity.setVisibility(U2RRelationVisibility.valueOf(dto.getVisibility()));
 
             incomingIds.add(entity.getId());
 
         } else {
-            ResourceTypeAction newAction =
-                    resourceTypeActionMapper.resourceTypeActionDTOToResourceTypeActionEntity(dto, dbResourceType);
+            U2RRelation newRelation =
+                    u2RRelationMapper.u2RRelationDTOToU2RRelationEntity(dto, dbResourceType);
 
-            dbResourceType.getResourceTypeActions().add(newAction);
+            dbResourceType.getU2RRelations().add(newRelation);
         }
     }
 
-    // 🔥 Remove deleted
-    dbResourceType.getResourceTypeActions()
-            .removeIf(a -> !incomingIds.contains(a.getId()));
+    dbResourceType.getU2RRelations()
+            .removeIf(r -> !incomingIds.contains(r.getId()));
 }
-
-
 private void syncR2RRelations(ResourceType dbResourceType, ResourceTypeDTO request) {
 
     Map<Integer, R2RRelation> dbMap =
