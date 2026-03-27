@@ -256,31 +256,30 @@ private void syncR2RRelations(ResourceType dbResourceType, Set<R2RRelationDTO> r
 
 private void syncResourceTypeConfigs(
         ResourceType dbResourceType,
-        ResourceTypeDTO dto
+        ResourceTypeDTO request
 ) {
 
     Set<ResourceTypeConfig> configs = dbResourceType.getResourceTypeConfigs();
 
-    Map<String, ResourceTypeConfig> configMap = configs.stream()
-            .collect(Collectors.toMap(ResourceTypeConfig::getKey, Function.identity()));
+    for (ResourceTypeConfig config : configs) {
 
-    // 🔥 USER GROUP INSTANCE
-    ResourceTypeConfig userGroupConfig = configMap.get("USER_GROUP_INSTANCE_ALLOWED");
-    if (userGroupConfig != null) {
-        String newValue = String.valueOf(dto.getIsUserGroupInstanceAllowed());
+        if ("USER_GROUP_INSTANCE_ALLOWED".equals(config.getKey())) {
+            String newValue = String.valueOf(request.getIsUserGroupInstanceAllowed());
 
-        if (!Objects.equals(userGroupConfig.getValue(), newValue)) {
-            userGroupConfig.setValue(newValue);
+            if (!Objects.equals(config.getValue(), newValue)) {
+                config.setValue(newValue);
+            }
+        }
+
+        if ("HROLE_ALLOWED".equals(config.getKey())) {
+            String newValue = String.valueOf(request.getIsHRoleAllowed());
+
+            if (!Objects.equals(config.getValue(), newValue)) {
+                config.setValue(newValue);
+            }
         }
     }
 
-    // 🔥 HROLE
-    ResourceTypeConfig hRoleConfig = configMap.get("HROLE_ALLOWED");
-    if (hRoleConfig != null) {
-        String newValue = String.valueOf(dto.getIsHRoleAllowed());
-
-        if (!Objects.equals(hRoleConfig.getValue(), newValue)) {
-            hRoleConfig.setValue(newValue);
-        }
-    }
+    // 🔥 IMPORTANT
+    dbResourceType.setResourceTypeConfigs(configs);
 }
