@@ -1,0 +1,27 @@
+@Test
+@DisplayName("PUT /v1/resource-types/{id} should return 200 when valid")
+void updateResourceType_validRequest_shouldReturn200() throws Exception {
+
+    when(resourceTypeService.updateResourceType(anyInt(), any()))
+            .thenReturn(RESOURCE_TYPE_VALID_RESPONSE);
+
+    mockMvc.perform(put("/v1/resource-types/{id}", 1)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            RESOURCE_TYPE_WITH_VALID_INPUT_2)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.resource_type_id")
+                    .value(RESOURCE_TYPE_VALID_RESPONSE.getResourceTypeId()));
+}
+
+@Test
+@DisplayName("PUT should return 400 when invalid request")
+void updateResourceType_invalidRequest_shouldReturn400() throws Exception {
+
+    mockMvc.perform(put("/v1/resource-types/{id}", 1)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            RESOURCE_TYPE_WITH_NEGATIVE_RESOURCE_TYPE_ID)))
+            .andExpect(status().isBadRequest());
+}
+
