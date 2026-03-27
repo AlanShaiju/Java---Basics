@@ -259,6 +259,11 @@ private void syncResourceTypeConfigs(
         ResourceTypeDTO request
 ) {
 
+private void syncResourceTypeConfigs(
+        ResourceType dbResourceType,
+        ResourceTypeDTO request
+) {
+
     Set<ResourceTypeConfig> configs = dbResourceType.getResourceTypeConfigs();
 
     for (ResourceTypeConfig config : configs) {
@@ -282,4 +287,6 @@ private void syncResourceTypeConfigs(
 
     // 🔥 IMPORTANT
     dbResourceType.setResourceTypeConfigs(configs);
+}
+
 }
