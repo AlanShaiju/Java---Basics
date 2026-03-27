@@ -1,161 +1,63 @@
-private void syncActions(ResourceType dbResourceType, ResourceTypeDTO request) {
+private void syncR2RRelations(ResourceType dbResourceType, ResourceTypeDTO request) {
 
-    Map<Integer, ResourceTypeAction> dbActionMap =
-            dbResourceType.getResourceTypeActions().stream()
-                    .collect(Collectors.toMap(
-                            ResourceTypeAction::getId,
-                            Function.identity(),
-                            (a, b) -> a
-                    ));
+    Map<Integer, R2RRelation> dbR2RRelationMap =
+            Stream.concat(
+                    dbResourceType.getSourceR2RRelations().stream(),
+                    dbResourceType.getTargetR2RRelations().stream()
+            ).collect(Collectors.toMap(
+                    R2RRelation::getId,
+                    Function.identity(),
+                    (a, b) -> a
+            ));
 
-    List<ResourceTypeActionDTO> incomingActions =
-            request.getResourceTypeActions().stream().toList();
+    List<R2RRelationDTO> incomingR2RRelations =
+            request.getR2RRelations().stream().toList();
 
-    Set<Integer> processedActionIds = new HashSet<>();
+    Set<Integer> processedR2RRelationIds = new HashSet<>();
 
-    for (ResourceTypeActionDTO a : incomingActions) {
-
-        if (a.getActionId() != null) {
-            ResourceTypeAction action = dbActionMap.get(a.getActionId());
-
-            if (action == null) {
-                throw new PolicyAdministrationPointServiceException(
-                        "Action not found",
-                        "ACTION_NOT_FOUND",
-                        HttpStatus.NOT_FOUND,
-                        a.getActionId()
-                );
-            }
-
-            action.setName(a.getName());
-            action.setDescription(a.getDescription());
-            action.setVisibility(ResourceTypeActionVisibility.valueOf(a.getVisibility()));
-
-            processedActionIds.add(action.getId());
-
-        } else {
-            ResourceTypeAction newAction =
-                    resourceTypeActionMapper
-                            .resourceTypeActionDTOToResourceTypeActionEntity(a, dbResourceType);
-
-            resourceTypeActionRepository.save(newAction);
-        }
-    }
-
-    List<ResourceTypeAction> toDelete =
-            dbResourceType.getResourceTypeActions().stream()
-                    .filter(a -> !processedActionIds.contains(a.getId()))
-                    .toList();
-
-    if (!toDelete.isEmpty()) {
-        resourceTypeActionRepository.deleteAll(toDelete);
-    }
-}
-
-
-private void syncU2RRelations(ResourceType dbResourceType, ResourceTypeDTO request) {
-
-    Map<Integer, U2RRelation> dbU2RRelationMap =
-            dbResourceType.getU2RRelations().stream()
-                    .collect(Collectors.toMap(
-                            U2RRelation::getId,
-                            Function.identity(),
-                            (a, b) -> a
-                    ));
-
-    List<U2RRelationDTO> incomingU2RRelations =
-            request.getU2RRelations().stream().toList();
-
-    Set<Integer> processedU2RRelationIds = new HashSet<>();
-
-    for (U2RRelationDTO r : incomingU2RRelations) {
+    for (R2RRelationDTO r : incomingR2RRelations) {
 
         if (r.getRelationId() != null) {
-            U2RRelation relation = dbU2RRelationMap.get(r.getRelationId());
+            R2RRelation relation = dbR2RRelationMap.get(r.getRelationId());
 
             if (relation == null) {
                 throw new PolicyAdministrationPointServiceException(
-                        "U2R relation not found",
-                        "U2R_NOT_FOUND",
+                        "R2R relation not found",
+                        "R2R_NOT_FOUND",
                         HttpStatus.NOT_FOUND,
                         r.getRelationId()
                 );
             }
 
+            relation.setRelation(r.getRelationName());
             relation.setDescription(r.getDescription());
-            relation.setVisibility(U2RRelationVisibility.valueOf(r.getVisibility()));
 
-            processedU2RRelationIds.add(relation.getId());
+            processedR2RRelationIds.add(relation.getId());
 
         } else {
-            U2RRelation newRelation =
-                    u2RRelationMapper.u2RRelationDTOToU2RRelationEntity(r, dbResourceType);
+            ResourceType target =
+                    resourceTypeRepository.getReferenceById(
+                            r.getResourceTypeDetail().getResourceTypeId()
+                    );
 
-            u2RRelationRepository.save(newRelation);
-        }
-    }
+            R2RRelation newRelation;
 
-    List<U2RRelation> toDelete =
-            dbResourceType.getU2RRelations().stream()
-                    .filter(r -> !processedU2RRelationIds.contains(r.getId()))
-                    .toList();
-
-    if (!toDelete.isEmpty()) {
-        u2RRelationRepository.deleteAll(toDelete);
-    }
-}
-
-
-
-
-private void syncU2RRelations(ResourceType dbResourceType, ResourceTypeDTO request) {
-
-    Map<Integer, U2RRelation> dbU2RRelationMap =
-            dbResourceType.getU2RRelations().stream()
-                    .collect(Collectors.toMap(
-                            U2RRelation::getId,
-                            Function.identity(),
-                            (a, b) -> a
-                    ));
-
-    List<U2RRelationDTO> incomingU2RRelations =
-            request.getU2RRelations().stream().toList();
-
-    Set<Integer> processedU2RRelationIds = new HashSet<>();
-
-    for (U2RRelationDTO r : incomingU2RRelations) {
-
-        if (r.getRelationId() != null) {
-            U2RRelation relation = dbU2RRelationMap.get(r.getRelationId());
-
-            if (relation == null) {
-                throw new PolicyAdministrationPointServiceException(
-                        "U2R relation not found",
-                        "U2R_NOT_FOUND",
-                        HttpStatus.NOT_FOUND,
-                        r.getRelationId()
-                );
+            if (r.getIsSource()) {
+                newRelation = r2RRelationMapper.createR2RRelationEntity(r, dbResourceType, target);
+            } else {
+                newRelation = r2RRelationMapper.createR2RRelationEntity(r, target, dbResourceType);
             }
 
-            relation.setDescription(r.getDescription());
-            relation.setVisibility(U2RRelationVisibility.valueOf(r.getVisibility()));
-
-            processedU2RRelationIds.add(relation.getId());
-
-        } else {
-            U2RRelation newRelation =
-                    u2RRelationMapper.u2RRelationDTOToU2RRelationEntity(r, dbResourceType);
-
-            u2RRelationRepository.save(newRelation);
+            r2RRelationRepository.save(newRelation);
         }
     }
 
-    List<U2RRelation> toDelete =
-            dbResourceType.getU2RRelations().stream()
-                    .filter(r -> !processedU2RRelationIds.contains(r.getId()))
+    List<R2RRelation> toDelete =
+            dbR2RRelationMap.values().stream()
+                    .filter(r -> !processedR2RRelationIds.contains(r.getId()))
                     .toList();
 
     if (!toDelete.isEmpty()) {
-        u2RRelationRepository.deleteAll(toDelete);
+        r2RRelationRepository.deleteAll(toDelete);
     }
 }
