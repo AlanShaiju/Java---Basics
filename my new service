@@ -290,3 +290,28 @@ private void syncResourceTypeConfigs(
 }
 
 }
+
+
+
+
+
+
+dbResourceType.getResourceTypeConfigs().forEach(c -> {
+
+    if ("USER_GROUP_INSTANCE_ALLOWED".equals(c.getKey())) {
+
+        String newValue = String.valueOf(request.getIsUserGroupInstanceAllowed());
+
+        if (!Objects.equals(c.getValue(), newValue)) {
+            c.setValue(newValue);
+        }
+
+    } else if ("HROLE_ALLOWED".equals(c.getKey())) {
+
+        String newValue = String.valueOf(request.getIsHRoleAllowed());
+
+        if (!Objects.equals(c.getValue(), newValue)) {
+            c.setValue(newValue);
+        }
+    }
+});
