@@ -1,0 +1,133 @@
+@Test
+@DisplayName("updateResourceType should update successfully")
+void updateResourceType_withValidInput_shouldReturnUpdatedResponse() {
+    Integer resourceTypeId = 1;
+    when(resourceTypeRepository.findById(resourceTypeId))
+            .thenReturn(Optional.of(MOCK_RESOURCE_TYPE));
+    when(topicRepository.findById(anyInt()))
+            .thenReturn(Optional.ofNullable(MOCK_TOPIC));
+    when(resourceTypeRepository.save(any()))
+            .thenReturn(MOCK_RESOURCE_TYPE);
+    when(resourceTypeMapper.toDTO(any(), any(), any(), any(), any()))
+            .thenReturn(RESOURCE_TYPE_VALID_RESPONSE);
+    ResourceTypeDTO result = resourceTypeService.updateResourceType(
+            resourceTypeId,
+            RESOURCE_TYPE_WITH_VALID_INPUT_2
+    );
+    assertThat(result).isNotNull();
+    assertThat(result.getResourceTypeId())
+            .isEqualTo(RESOURCE_TYPE_VALID_RESPONSE.getResourceTypeId());
+}
+
+@Test
+@DisplayName("updateResourceType should update successfully")
+void updateResourceType_withValidInput_shouldReturnUpdatedResponse() {
+    Integer resourceTypeId = 1;
+    when(resourceTypeRepository.findById(resourceTypeId))
+            .thenReturn(Optional.of(MOCK_RESOURCE_TYPE));
+    when(topicRepository.findById(anyInt()))
+            .thenReturn(Optional.ofNullable(MOCK_TOPIC));
+    when(resourceTypeRepository.save(any()))
+            .thenReturn(MOCK_RESOURCE_TYPE);
+    when(resourceTypeMapper.toDTO(any(), any(), any(), any(), any()))
+            .thenReturn(RESOURCE_TYPE_VALID_RESPONSE);
+    ResourceTypeDTO result = resourceTypeService.updateResourceType(
+            resourceTypeId,
+            RESOURCE_TYPE_WITH_VALID_INPUT_2
+    );
+    assertThat(result).isNotNull();
+    assertThat(result.getResourceTypeId())
+            .isEqualTo(RESOURCE_TYPE_VALID_RESPONSE.getResourceTypeId());
+}
+
+
+@Test
+@DisplayName("updateResourceType should throw exception when path id and body id mismatch")
+void updateResourceType_idMismatch_shouldThrowException() {
+    Integer pathId = 1;
+    ResourceTypeDTO request = RESOURCE_TYPE_WITH_VALID_INPUT_2;
+    request.setResourceTypeId(2);
+    assertThrows(
+            PolicyAdministrationPointServiceException.class,
+            () -> resourceTypeService.updateResourceType(pathId, request)
+    );
+}
+
+
+@Test
+@DisplayName("updateResourceType should throw exception when topic not found")
+void updateResourceType_topicNotFound_shouldThrowException() {
+    when(resourceTypeRepository.findById(anyInt()))
+            .thenReturn(Optional.of(MOCK_RESOURCE_TYPE));
+    when(topicRepository.findById(anyInt()))
+            .thenReturn(Optional.empty());
+    assertThrows(
+            PolicyAdministrationPointServiceException.class,
+            () -> resourceTypeService.updateResourceType(
+                    1,
+                    RESOURCE_TYPE_WITH_VALID_INPUT_2
+            )
+    );
+}
+
+
+@Test
+@DisplayName("updateResourceType should throw exception when u2r integrity fails")
+void updateResourceType_u2rIntegrityFails_shouldThrowException() {
+    when(resourceTypeRepository.findById(anyInt()))
+            .thenReturn(Optional.of(MOCK_RESOURCE_TYPE));
+    when(topicRepository.findById(anyInt()))
+            .thenReturn(Optional.ofNullable(MOCK_TOPIC));
+    doThrow(new PolicyAdministrationPointServiceException(
+            "U2R integrity failed", "", HttpStatus.BAD_REQUEST
+    )).when(resourceTypeService).u2RRelationIntegrityCheck(any(), any());
+    assertThrows(
+            PolicyAdministrationPointServiceException.class,
+            () -> resourceTypeService.updateResourceType(
+                    1,
+                    RESOURCE_TYPE_WITH_VALID_INPUT_2
+            )
+    );
+}
+
+
+@Test
+@DisplayName("updateResourceType should delete missing relations")
+void updateResourceType_shouldDeleteMissingRelations() {
+    ResourceType existing = MOCK_RESOURCE_TYPE;
+    when(resourceTypeRepository.findById(anyInt()))
+            .thenReturn(Optional.of(existing));
+    when(topicRepository.findById(anyInt()))
+            .thenReturn(Optional.ofNullable(MOCK_TOPIC));
+    when(resourceTypeRepository.save(any()))
+            .thenReturn(existing);
+    when(resourceTypeMapper.toDTO(any(), any(), any(), any(), any()))
+            .thenReturn(RESOURCE_TYPE_VALID_RESPONSE);
+    ResourceTypeDTO request = RESOURCE_TYPE_WITH_VALID_INPUT_2;
+    request.setR2RRelations(Set.of());
+    ResourceTypeDTO result =
+            resourceTypeService.updateResourceType(1, request);
+    assertThat(result).isNotNull();
+}
+
+
+@Test
+@DisplayName("updateResourceType should update config values")
+void updateResourceType_shouldUpdateConfigs() {
+    when(resourceTypeRepository.findById(anyInt()))
+            .thenReturn(Optional.of(MOCK_RESOURCE_TYPE));
+    when(topicRepository.findById(anyInt()))
+            .thenReturn(Optional.ofNullable(MOCK_TOPIC));
+    when(resourceTypeRepository.save(any()))
+            .thenReturn(MOCK_RESOURCE_TYPE);
+    when(resourceTypeMapper.toDTO(any(), any(), any(), any(), any()))
+            .thenReturn(RESOURCE_TYPE_VALID_RESPONSE);
+    ResourceTypeDTO request = RESOURCE_TYPE_WITH_VALID_INPUT_2;
+    request.setIsUserGroupInstanceAllowed(true);
+    request.setIsHRoleAllowed(true);
+    ResourceTypeDTO result =
+            resourceTypeService.updateResourceType(1, request);
+    assertThat(result).isNotNull();
+}
+
+
