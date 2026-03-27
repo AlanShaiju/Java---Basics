@@ -296,22 +296,35 @@ private void syncResourceTypeConfigs(
 
 
 
-dbResourceType.getResourceTypeConfigs().forEach(c -> {
+private void syncResourceTypeConfigs(
+        ResourceType dbResourceType,
+        ResourceTypeDTO request
+) {
 
-    if ("USER_GROUP_INSTANCE_ALLOWED".equals(c.getKey())) {
+    for (ResourceTypeConfig config : dbResourceType.getResourceTypeConfigs()) {
 
-        String newValue = String.valueOf(request.getIsUserGroupInstanceAllowed());
+        if ("USER_GROUP_INSTANCE_ALLOWED".equals(config.getKey())) {
 
-        if (!Objects.equals(c.getValue(), newValue)) {
-            c.setValue(newValue);
+            String newValue = String.valueOf(request.getIsUserGroupInstanceAllowed());
+
+            if (!Objects.equals(config.getValue(), newValue)) {
+                config.setValue(newValue);
+
+                // 🔥 THIS LINE IS CRITICAL
+                config.setResourceType(dbResourceType);
+            }
         }
 
-    } else if ("HROLE_ALLOWED".equals(c.getKey())) {
+        if ("HROLE_ALLOWED".equals(config.getKey())) {
 
-        String newValue = String.valueOf(request.getIsHRoleAllowed());
+            String newValue = String.valueOf(request.getIsHRoleAllowed());
 
-        if (!Objects.equals(c.getValue(), newValue)) {
-            c.setValue(newValue);
+            if (!Objects.equals(config.getValue(), newValue)) {
+                config.setValue(newValue);
+
+                // 🔥 THIS LINE IS CRITICAL
+                config.setResourceType(dbResourceType);
+            }
         }
     }
-});
+}
