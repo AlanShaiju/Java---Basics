@@ -1,1 +1,226 @@
+// ===================== HELPER METHOD COVERAGE TESTS =====================
 
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("isExistingRelation should return true when relationId is present")
+@Test
+void isExistingRelation_shouldReturnTrue() {
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setRelationId(1);
+
+    boolean result = resourceTypeService.isExistingRelation(dto);
+
+    assertThat(result).isTrue();
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("getExistingOrThrow should return relation when present")
+@Test
+void getExistingOrThrow_shouldReturnRelation() {
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setRelationId(1);
+
+    R2RRelation relation = new R2RRelation();
+    Map<Integer, R2RRelation> map = Map.of(1, relation);
+
+    R2RRelation result = resourceTypeService.getExistingOrThrow(dto, map);
+
+    assertThat(result).isEqualTo(relation);
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("updateBasicFields should update relation and description")
+@Test
+void updateBasicFields_shouldUpdateFields() {
+    R2RRelation relation = new R2RRelation();
+
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setRelationName("REL");
+    dto.setDescription("DESC");
+
+    resourceTypeService.updateBasicFields(relation, dto);
+
+    assertThat(relation.getRelation()).isEqualTo("REL");
+    assertThat(relation.getDescription()).isEqualTo("DESC");
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("resolveSource should return dbResourceType when dto is source")
+@Test
+void resolveSource_shouldReturnDbResourceType() {
+    ResourceType db = new ResourceType();
+    db.setId(1);
+
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setIsSource(true);
+
+    when(resourceTypeRepository.findById(anyInt()))
+            .thenReturn(Optional.of(db));
+
+    ResourceType result = resourceTypeService.resolveSource(dto, db);
+
+    assertThat(result).isNotNull();
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("resolveTarget should return resolved target resource")
+@Test
+void resolveTarget_shouldReturnTarget() {
+    ResourceType db = new ResourceType();
+    db.setId(1);
+
+    ResourceType target = new ResourceType();
+    target.setId(2);
+
+    ResourceTypeDetail detail = new ResourceTypeDetail();
+    detail.setResourceTypeId(2);
+
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setIsSource(true);
+    dto.setResourceTypeDetail(detail);
+
+    when(resourceTypeRepository.findById(anyInt()))
+            .thenReturn(Optional.of(target));
+
+    ResourceType result = resourceTypeService.resolveTarget(dto, db);
+
+    assertThat(result).isEqualTo(target);
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("updateSourceIfChanged should update source relation")
+@Test
+void updateSourceIfChanged_shouldUpdateSource() {
+    ResourceType oldSource = new ResourceType();
+    oldSource.setId(1);
+    oldSource.setSourceR2RRelations(new HashSet<>());
+
+    ResourceType newSource = new ResourceType();
+    newSource.setId(2);
+    newSource.setSourceR2RRelations(new HashSet<>());
+
+    R2RRelation relation = new R2RRelation();
+    relation.setSourceResourceType(oldSource);
+
+    oldSource.getSourceR2RRelations().add(relation);
+
+    resourceTypeService.updateSourceIfChanged(relation, newSource);
+
+    assertThat(relation.getSourceResourceType()).isEqualTo(newSource);
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("updateTargetIfChanged should update target relation")
+@Test
+void updateTargetIfChanged_shouldUpdateTarget() {
+    ResourceType oldTarget = new ResourceType();
+    oldTarget.setId(1);
+    oldTarget.setTargetR2RRelations(new HashSet<>());
+
+    ResourceType newTarget = new ResourceType();
+    newTarget.setId(2);
+    newTarget.setTargetR2RRelations(new HashSet<>());
+
+    R2RRelation relation = new R2RRelation();
+    relation.setTargetResourceType(oldTarget);
+
+    oldTarget.getTargetR2RRelations().add(relation);
+
+    resourceTypeService.updateTargetIfChanged(relation, newTarget);
+
+    assertThat(relation.getTargetResourceType()).isEqualTo(newTarget);
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("buildExistingMap should return map of relations")
+@Test
+void buildExistingMap_shouldReturnMap() {
+    R2RRelation relation = new R2RRelation();
+    relation.setId(1);
+
+    Set<R2RRelation> set = Set.of(relation);
+
+    Map<Integer, R2RRelation> result = resourceTypeService.buildExistingMap(set);
+
+    assertThat(result).containsKey(1);
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("buildRequestMap should return map of request dtos")
+@Test
+void buildRequestMap_shouldReturnMap() {
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setRelationId(1);
+
+    Set<R2RRelationDTO> set = Set.of(dto);
+
+    Map<Integer, R2RRelationDTO> result = resourceTypeService.buildRequestMap(set);
+
+    assertThat(result).containsKey(1);
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("removeDeletedRelations should remove missing relations")
+@Test
+void removeDeletedRelations_shouldRemoveRelation() {
+    ResourceType source = new ResourceType();
+    source.setSourceR2RRelations(new HashSet<>());
+
+    ResourceType target = new ResourceType();
+    target.setTargetR2RRelations(new HashSet<>());
+
+    R2RRelation relation = new R2RRelation();
+    relation.setId(1);
+    relation.setSourceResourceType(source);
+    relation.setTargetResourceType(target);
+
+    source.getSourceR2RRelations().add(relation);
+    target.getTargetR2RRelations().add(relation);
+
+    Set<R2RRelation> existing = new HashSet<>(Set.of(relation));
+    Map<Integer, R2RRelationDTO> requestMap = Map.of(); // empty → delete
+
+    resourceTypeService.removeDeletedRelations(existing, requestMap);
+
+    assertThat(source.getSourceR2RRelations()).isEmpty();
+}
+
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("createRelations should create new relation when id is null")
+@Test
+void createRelations_shouldCreateRelation() {
+    ResourceType db = new ResourceType();
+    db.setId(1);
+    db.setSourceR2RRelations(new HashSet<>());
+    db.setTargetR2RRelations(new HashSet<>());
+
+    ResourceType other = new ResourceType();
+    other.setId(2);
+    other.setSourceR2RRelations(new HashSet<>());
+    other.setTargetR2RRelations(new HashSet<>());
+
+    ResourceTypeDetail detail = new ResourceTypeDetail();
+    detail.setResourceTypeId(2);
+
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setRelationName("REL");
+    dto.setDescription("DESC");
+    dto.setIsSource(true);
+    dto.setResourceTypeDetail(detail);
+
+    when(resourceTypeRepository.findById(anyInt()))
+            .thenReturn(Optional.of(other));
+
+    resourceTypeService.createRelations(Set.of(dto), db);
+
+    assertThat(db.getSourceR2RRelations()).isNotEmpty();
+}
