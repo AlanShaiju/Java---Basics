@@ -1,1 +1,184 @@
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("syncR2RRelations should handle null request")
+@Test
+void syncR2RRelations_shouldHandleNullRequest() {
+    ResourceType db = new ResourceType();
+    db.setSourceR2RRelations(new HashSet<>());
+    db.setTargetR2RRelations(new HashSet<>());
 
+    service.syncR2RRelations(db, null);
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("getExistingRelations should return combined relations")
+@Test
+void getExistingRelations_shouldReturnCombinedRelations() {
+    ResourceType db = new ResourceType();
+    R2RRelation r1 = new R2RRelation();
+    R2RRelation r2 = new R2RRelation();
+
+    db.setSourceR2RRelations(Set.of(r1));
+    db.setTargetR2RRelations(Set.of(r2));
+
+    Set<R2RRelation> result = service.getExistingRelations(db);
+    assertEquals(2, result.size());
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("buildExistingMap should filter null ids")
+@Test
+void buildExistingMap_shouldFilterNullIds() {
+    R2RRelation r1 = new R2RRelation();
+    r1.setId(1);
+    R2RRelation r2 = new R2RRelation();
+
+    Map<Integer, R2RRelation> result = service.buildExistingMap(Set.of(r1, r2));
+
+    assertEquals(1, result.size());
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("syncU2RRelationActions should add mapping")
+@Test
+void syncU2RRelationActions_shouldAddMapping() {
+    U2RRelation relation = new U2RRelation();
+    relation.setRelationActions(new HashSet<>());
+
+    ResourceTypeAction action = new ResourceTypeAction();
+    action.setId(100);
+
+    when(resourceTypeActionRepository.findById(100))
+            .thenReturn(Optional.of(action));
+
+    ResourceTypeActionDTO dto = new ResourceTypeActionDTO();
+    dto.setActionId(100);
+
+    service.syncU2RRelationActions(relation, Set.of(dto));
+
+    assertEquals(1, relation.getRelationActions().size());
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("syncActions should handle null request")
+@Test
+void syncActions_shouldHandleNullRequest() {
+    ResourceType db = new ResourceType();
+    db.setResourceTypeActions(new HashSet<>());
+
+    service.syncActions(db, null);
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("updateTargetIfChanged should update target relation")
+@Test
+void updateTargetIfChanged_shouldUpdateTargetRelation() {
+    ResourceType oldTarget = new ResourceType();
+    oldTarget.setId(1);
+    oldTarget.setTargetR2RRelations(new HashSet<>());
+
+    ResourceType newTarget = new ResourceType();
+    newTarget.setId(2);
+    newTarget.setTargetR2RRelations(new HashSet<>());
+
+    R2RRelation relation = new R2RRelation();
+    relation.setTargetResourceType(oldTarget);
+    oldTarget.getTargetR2RRelations().add(relation);
+
+    service.updateTargetIfChanged(relation, newTarget);
+
+    assertEquals(newTarget, relation.getTargetResourceType());
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("syncResourceTypeConfigs should update config value")
+@Test
+void syncResourceTypeConfigs_shouldUpdateConfigValue() {
+    ResourceType db = new ResourceType();
+
+    ResourceTypeConfig config = new ResourceTypeConfig();
+    config.setKey("is_user_group_instance_allowed");
+    config.setValue("false");
+
+    db.setResourceTypeConfigs(new HashSet<>(Set.of(config)));
+
+    ResourceTypeDTO dto = new ResourceTypeDTO();
+    dto.setIsUserGroupInstanceAllowed(true);
+
+    service.syncResourceTypeConfigs(db, dto);
+
+    assertEquals("true", config.getValue());
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("updateRelations should process existing relations")
+@Test
+void updateRelations_shouldProcessExistingRelations() {
+    R2RRelation relation = new R2RRelation();
+    relation.setId(10);
+
+    Map<Integer, R2RRelation> existingMap = Map.of(10, relation);
+
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setRelationId(10);
+
+    ResourceType db = new ResourceType();
+
+    service.updateRelations(Set.of(dto), existingMap, db);
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("isExistingRelation should return true when id present")
+@Test
+void isExistingRelation_shouldReturnTrueWhenIdPresent() {
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setRelationId(5);
+
+    assertTrue(service.isExistingRelation(dto));
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("getExistingOrThrow should return relation when exists")
+@Test
+void getExistingOrThrow_shouldReturnRelationWhenExists() {
+    R2RRelation relation = new R2RRelation();
+    relation.setId(7);
+
+    Map<Integer, R2RRelation> map = Map.of(7, relation);
+
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setRelationId(7);
+
+    R2RRelation result = service.getExistingOrThrow(dto, map);
+
+    assertNotNull(result);
+}
+
+@Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
+@DisplayName("createRelations should create new relation")
+@Test
+void createRelations_shouldCreateNewRelation() {
+    ResourceType db = new ResourceType();
+    db.setId(1);
+    db.setSourceR2RRelations(new HashSet<>());
+    db.setTargetR2RRelations(new HashSet<>());
+
+    ResourceType target = new ResourceType();
+    target.setId(2);
+    target.setSourceR2RRelations(new HashSet<>());
+    target.setTargetR2RRelations(new HashSet<>());
+
+    when(resourceTypeRepository.findById(2))
+            .thenReturn(Optional.of(target));
+
+    R2RRelationDTO dto = new R2RRelationDTO();
+    dto.setRelationId(null);
+    dto.setIsSource(true);
+
+    ResourceTypeDetail detail = new ResourceTypeDetail();
+    detail.setResourceTypeId(2);
+    dto.setResourceTypeDetail(detail);
+
+    service.createRelations(Set.of(dto), db);
+
+    assertFalse(db.getSourceR2RRelations().isEmpty());
+}
