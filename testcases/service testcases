@@ -1,90 +1,88 @@
 @Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
-@DisplayName("syncU2RRelations should handle null requestRelations")
+@DisplayName("syncActions should handle null requestActions")
 @Test
-void syncU2RRelations_shouldHandleNullRequestRelations() {
+void syncActions_shouldHandleNullRequestActions() {
     ResourceType db = new ResourceType();
-    db.setU2RRelations(new HashSet<>());
+    db.setResourceTypeActions(new HashSet<>());
 
-    service.syncU2RRelations(db, null);
+    service.syncActions(db, null);
 }
 
 @Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
-@DisplayName("syncU2RRelations should update existing relation")
+@DisplayName("syncActions should update existing action")
 @Test
-void syncU2RRelations_shouldUpdateExistingRelation() {
+void syncActions_shouldUpdateExistingAction() {
     ResourceType db = new ResourceType();
 
-    U2RRelation existing = new U2RRelation();
+    ResourceTypeAction existing = new ResourceTypeAction();
     existing.setId(1);
-    existing.setRelation("old");
+    existing.setName("old");
     existing.setDescription("old");
 
-    db.setU2RRelations(new HashSet<>(Set.of(existing)));
+    db.setResourceTypeActions(new HashSet<>(Set.of(existing)));
 
-    U2RRelationDTO dto = new U2RRelationDTO();
-    dto.setRelationId(1);
-    dto.setRelationName("new");
+    ResourceTypeActionDTO dto = new ResourceTypeActionDTO();
+    dto.setActionId(1);
+    dto.setName("new");
     dto.setDescription("new");
     dto.setVisibility("PUBLIC");
-    dto.setU2RRelationActions(new HashSet<>());
 
-    service.syncU2RRelations(db, Set.of(dto));
+    service.syncActions(db, Set.of(dto));
 
-    assertEquals("new", existing.getRelation());
+    assertEquals("new", existing.getName());
     assertEquals("new", existing.getDescription());
 }
 
 @Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
-@DisplayName("syncU2RRelations should throw when existing relation not found")
+@DisplayName("syncActions should throw when action not found")
 @Test
-void syncU2RRelations_shouldThrowWhenRelationNotFound() {
+void syncActions_shouldThrowWhenActionNotFound() {
     ResourceType db = new ResourceType();
-    db.setU2RRelations(new HashSet<>());
+    db.setResourceTypeActions(new HashSet<>());
 
-    U2RRelationDTO dto = new U2RRelationDTO();
-    dto.setRelationId(99);
+    ResourceTypeActionDTO dto = new ResourceTypeActionDTO();
+    dto.setActionId(99);
 
     assertThrows(PolicyAdministrationPointServiceException.class,
-            () -> service.syncU2RRelations(db, Set.of(dto)));
+            () -> service.syncActions(db, Set.of(dto)));
 }
 
 @Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
-@DisplayName("syncU2RRelations should create new relation when id is null")
+@DisplayName("syncActions should create new action when id is null")
 @Test
-void syncU2RRelations_shouldCreateNewRelation() {
+void syncActions_shouldCreateNewAction() {
     ResourceType db = new ResourceType();
-    db.setU2RRelations(new HashSet<>());
+    db.setResourceTypeActions(new HashSet<>());
 
-    U2RRelationDTO dto = new U2RRelationDTO();
-    dto.setRelationId(null);
-    dto.setRelationName("newRelation");
+    ResourceTypeActionDTO dto = new ResourceTypeActionDTO();
+    dto.setActionId(null);
+    dto.setName("newAction");
     dto.setDescription("desc");
     dto.setVisibility("PUBLIC");
-    dto.setU2RRelationActions(new HashSet<>());
 
-    service.syncU2RRelations(db, Set.of(dto));
+    service.syncActions(db, Set.of(dto));
 
-    assertEquals(1, db.getU2RRelations().size());
+    assertEquals(1, db.getResourceTypeActions().size());
 }
 
 @Tag("STLResourceTypeManagementServiceImpl_Test_Cases")
-@DisplayName("syncU2RRelations should remove relations not present in request")
+@DisplayName("syncActions should remove missing actions")
 @Test
-void syncU2RRelations_shouldRemoveDeletedRelations() {
+void syncActions_shouldRemoveMissingActions() {
     ResourceType db = new ResourceType();
 
-    U2RRelation existing1 = new U2RRelation();
-    existing1.setId(1);
+    ResourceTypeAction a1 = new ResourceTypeAction();
+    a1.setId(1);
 
-    U2RRelation existing2 = new U2RRelation();
-    existing2.setId(2);
+    ResourceTypeAction a2 = new ResourceTypeAction();
+    a2.setId(2);
 
-    db.setU2RRelations(new HashSet<>(Set.of(existing1, existing2)));
+    db.setResourceTypeActions(new HashSet<>(Set.of(a1, a2)));
 
-    U2RRelationDTO dto = new U2RRelationDTO();
-    dto.setRelationId(1);
+    ResourceTypeActionDTO dto = new ResourceTypeActionDTO();
+    dto.setActionId(1);
 
-    service.syncU2RRelations(db, Set.of(dto));
+    service.syncActions(db, Set.of(dto));
 
-    assertEquals(1, db.getU2RRelations().size());
+    assertEquals(1, db.getResourceTypeActions().size());
 }
