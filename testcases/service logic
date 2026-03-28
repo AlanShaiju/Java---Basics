@@ -1,4 +1,5 @@
-protected void syncR2RRelations(ResourceType dbResourceType, Set<R2RRelationDTO> requestRelations) {
+protected void syncR2RRelations(ResourceType dbResourceType,
+                                 Set<R2RRelationDTO> requestRelations) {
     if (requestRelations == null) {
         requestRelations = Collections.emptySet();
     }
@@ -6,14 +7,10 @@ protected void syncR2RRelations(ResourceType dbResourceType, Set<R2RRelationDTO>
     Map<Integer, R2RRelation> existingMap = mapExistingRelations(existingRelations);
     Map<Integer, R2RRelationDTO> requestMap = mapRequestRelations(requestRelations);
     deleteMissingRelations(existingRelations, requestMap);
-    updateExistingRelations(requestRelations, existingMap);
+    updateExistingRelations(requestRelations, existingMap, dbResourceType);
     createNewRelations(requestRelations, dbResourceType);
 }
 
-
-// ============================
-// getAllExistingRelations
-// ============================
 
 private Set<R2RRelation> getAllExistingRelations(ResourceType dbResourceType) {
     return Stream.concat(
@@ -22,21 +19,11 @@ private Set<R2RRelation> getAllExistingRelations(ResourceType dbResourceType) {
     ).collect(Collectors.toSet());
 }
 
-
-// ============================
-// mapExistingRelations
-// ============================
-
 private Map<Integer, R2RRelation> mapExistingRelations(Set<R2RRelation> existingRelations) {
     return existingRelations.stream()
             .filter(r -> r.getId() != null)
             .collect(Collectors.toMap(R2RRelation::getId, Function.identity()));
 }
-
-
-// ============================
-// mapRequestRelations
-// ============================
 
 private Map<Integer, R2RRelationDTO> mapRequestRelations(Set<R2RRelationDTO> requestRelations) {
     return requestRelations.stream()
@@ -44,22 +31,12 @@ private Map<Integer, R2RRelationDTO> mapRequestRelations(Set<R2RRelationDTO> req
             .collect(Collectors.toMap(R2RRelationDTO::getRelationId, Function.identity()));
 }
 
-
-// ============================
-// deleteMissingRelations
-// ============================
-
 private void deleteMissingRelations(Set<R2RRelation> existingRelations,
                                     Map<Integer, R2RRelationDTO> requestMap) {
     existingRelations.removeIf(existing ->
             existing.getId() != null && !requestMap.containsKey(existing.getId())
     );
 }
-
-
-// ============================
-// updateExistingRelations
-// ============================
 
 private void updateExistingRelations(Set<R2RRelationDTO> requestRelations,
                                      Map<Integer, R2RRelation> existingMap) {
@@ -93,11 +70,6 @@ private void updateExistingRelations(Set<R2RRelationDTO> requestRelations,
         }
     }
 }
-
-
-// ============================
-// createNewRelations
-// ============================
 
 private void createNewRelations(Set<R2RRelationDTO> requestRelations,
                                 ResourceType dbResourceType) {
