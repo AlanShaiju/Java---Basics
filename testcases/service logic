@@ -1,0 +1,75 @@
+protected void syncR2RRelations(ResourceType dbResourceType, Set<R2RRelationDTO> requestRelations) {
+
+    if (requestRelations == null) {
+        requestRelations = Collections.emptySet();
+    }
+
+    Set<R2RRelation> existingRelations = getAllExistingRelations(dbResourceType);
+
+    Map<Integer, R2RRelation> existingMap = mapExistingRelations(existingRelations);
+    Map<Integer, R2RRelationDTO> requestMap = mapRequestRelations(requestRelations);
+
+    deleteMissingRelations(existingRelations, requestMap);
+    updateExistingRelations(requestRelations, existingMap);
+    createNewRelations(requestRelations, dbResourceType);
+}
+
+
+private Set<R2RRelation> getAllExistingRelations(ResourceType dbResourceType) {
+    return Stream.concat(
+            dbResourceType.getSourceR2RRelations().stream(),
+            dbResourceType.getTargetR2RRelations().stream()
+    ).collect(Collectors.toSet());
+}
+
+private Map<Integer, R2RRelation> mapExistingRelations(Set<R2RRelation> existingRelations) {
+    return existingRelations.stream()
+            .filter(r -> r.getId() != null)
+            .collect(Collectors.toMap(R2RRelation::getId, Function.identity()));
+}
+
+private Map<Integer, R2RRelationDTO> mapRequestRelations(Set<R2RRelationDTO> requestRelations) {
+    return requestRelations.stream()
+            .filter(r -> r.getRelationId() != null)
+            .collect(Collectors.toMap(R2RRelationDTO::getRelationId, Function.identity()));
+}
+
+private void deleteMissingRelations(Set<R2RRelation> existingRelations,
+                                    Map<Integer, R2RRelationDTO> requestMap) {
+
+    existingRelations.removeIf(existing ->
+            existing.getId() != null && !requestMap.containsKey(existing.getId()));
+}
+
+private void updateExistingRelations(Set<R2RRelationDTO> requestRelations,
+                                     Map<Integer, R2RRelation> existingMap) {
+
+    for (R2RRelationDTO dto : requestRelations) {
+        if (dto.getRelationId() != null) {
+            R2RRelation existing = existingMap.get(dto.getRelationId());
+
+            if (existing == null) {
+                throw new PolicyAdministrationPointServiceException(
+                        "Relation not found: " + dto.getRelationId(),
+                        "RELATION_NOT_FOUND",
+                        HttpStatus.BAD_REQUEST,
+                        dto.getRelationId()
+                );
+            }
+
+            // update fields here
+        }
+    }
+}
+
+private void createNewRelations(Set<R2RRelationDTO> requestRelations,
+                                ResourceType dbResourceType) {
+
+    for (R2RRelationDTO dto : requestRelations) {
+        if (dto.getRelationId() == null) {
+            R2RRelation newRelation = new R2RRelation();
+            // set fields
+            dbResourceType.getSourceR2RRelations().add(newRelation);
+        }
+    }
+}
