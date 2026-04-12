@@ -1,0 +1,31 @@
+Set<U2RRelationUserMapping> u2RRelationUserMappings =
+    resourceInstance.getU2RRelationAssignments().stream()
+        .map(u2RRelationUserMapper::dtoToEntity)
+        .collect(Collectors.toSet());
+
+Set<R2RRelationResourceMapping> allMappings =
+    resourceInstance.getR2RRelationAssignments().stream()
+        .map(stlr2RRelationResourceMapper::toEntity)
+        .collect(Collectors.toSet());
+
+ResourceInstance dbResourceInstance =
+    resourceInstanceMapper.resourceInstanceDTOToEntity(
+        resourceInstance, dbResourceType, tenant,
+        sourceResourceInstances, targetResourceInstances,
+        u2RRelationUserMappings
+    );
+
+// 🔥 CRITICAL: set back-references
+u2RRelationUserMappings.forEach(m ->
+    m.setResourceInstance(dbResourceInstance)
+);
+
+sourceResourceInstances.forEach(m ->
+    m.setSourceResourceInstance(dbResourceInstance)
+);
+
+targetResourceInstances.forEach(m ->
+    m.setTargetResourceInstance(dbResourceInstance)
+);
+
+resourceInstanceRepository.save(dbResourceInstance);
