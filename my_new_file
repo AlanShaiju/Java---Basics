@@ -1,0 +1,77 @@
+@Tag("STLOPALDataManagementServiceImpl_Test_Cases")
+@DisplayName("getData should retrieve OPAL specific data for a given topicCode")
+@Test
+void getData_shouldReturnSuccessfully() {
+
+    // Arrange
+    String topicCode = "topic-code";
+
+    TenantOpalDetail tenant = mock(TenantOpalDetail.class);
+    when(tenant.getId()).thenReturn(1);
+    when(tenant.getCode()).thenReturn("tenant1");
+
+    Set<TenantOpalDetail> tenantDetails = Set.of(tenant);
+
+    ResourceTypeOpalDetail resourceType = mock(ResourceTypeOpalDetail.class);
+    when(resourceType.getId()).thenReturn(10);
+    when(resourceType.getCode()).thenReturn("PATIENT");
+
+    Set<ResourceTypeOpalDetail> resourceTypes = Set.of(resourceType);
+
+    UserOpalDetail user = mock(UserOpalDetail.class);
+    when(user.getUsername()).thenReturn("john");
+    when(user.getUserStatus()).thenReturn("ACTIVE");
+    when(user.getTenantId()).thenReturn(1);
+
+    Set<UserOpalDetail> users = Set.of(user);
+
+    Set<UserGroupInstanceOpalDetail> userGroupInstances = new HashSet<>();
+    Set<UserGroupInstanceMemberOpalDetail> userGroupMembers = new HashSet<>();
+    Set<ResourceInstanceOpalDetail> resourceInstances = new HashSet<>();
+    Set<RelationDerivationOpalDetail> relationDerivations = new HashSet<>();
+    Set<Integer> relationIds = Set.of(100);
+    Set<U2RRelationActionMappingOpalDetail> actionMappings = new HashSet<>();
+    Set<U2RRelationUserMappingOpalDetail> userMappings = new HashSet<>();
+
+    when(tenantTopicAccessRepository.findByTopicCodeIgnoreCase(topicCode.toUpperCase()))
+            .thenReturn(tenantDetails);
+
+    when(userRepository.findByTenantIdIn(Set.of(1)))
+            .thenReturn(users);
+
+    when(userGroupInstanceRepository.findByTenantIdIn(Set.of(1)))
+            .thenReturn(userGroupInstances);
+
+    when(userGroupInstanceMemberRepository.findByTenantIdIn(Set.of(1)))
+            .thenReturn(userGroupMembers);
+
+    when(resourceTypeRepository.findByTopicCode(topicCode))
+            .thenReturn(resourceTypes);
+
+    when(resourceInstanceRepository.findByResourceTypeIdIn(Set.of(10)))
+            .thenReturn(resourceInstances);
+
+    when(relationDerivationRepository.findByResourceTypeIdIn(Set.of(10)))
+            .thenReturn(relationDerivations);
+
+    when(u2RRelationRepository.findByResourceTypeIdIn(Set.of(10)))
+            .thenReturn(relationIds);
+
+    when(u2RRelationActionRepository.findByU2RRelationIdIn(relationIds))
+            .thenReturn(actionMappings);
+
+    when(u2RRelationUserMappingRepository.findByU2RRelationIdIn(relationIds))
+            .thenReturn(userMappings);
+
+    // Act
+    OpalDataDTO result = service.getData(topicCode);
+
+    // Assert
+    assertThat(result).isNotNull();
+    assertThat(result.getOpalData()).isNotNull();
+
+    verify(tenantTopicAccessRepository).findByTopicCodeIgnoreCase(topicCode.toUpperCase());
+    verify(resourceTypeRepository).findByTopicCode(topicCode);
+    verify(resourceInstanceRepository).findByResourceTypeIdIn(Set.of(10));
+    verify(userRepository).findByTenantIdIn(Set.of(1));
+}
