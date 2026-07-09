@@ -1,0 +1,108 @@
+@Tag("STLOPALDataManagementServiceImpl_Test_Cases")
+@DisplayName("getData should populate resource instances and user group relations")
+@Test
+void getData_shouldPopulateResourceInstances() {
+
+    String topicCode = "topic-code";
+
+    // ---------- Tenant ----------
+    TenantOpalDetail tenant = mock(TenantOpalDetail.class);
+    when(tenant.getId()).thenReturn(1);
+    when(tenant.getCode()).thenReturn("TENANT1");
+
+    when(tenantTopicAccessRepository.findByTopicCodeIgnoreCase(topicCode.toUpperCase()))
+            .thenReturn(Set.of(tenant));
+
+    // ---------- Resource Type ----------
+    ResourceTypeOpalDetail resourceType = mock(ResourceTypeOpalDetail.class);
+    when(resourceType.getId()).thenReturn(100);
+    when(resourceType.getCode()).thenReturn("PATIENT");
+
+    when(resourceTypeRepository.findByTopicCode(topicCode))
+            .thenReturn(Set.of(resourceType));
+
+    // ---------- User ----------
+    UserOpalDetail user = mock(UserOpalDetail.class);
+    when(user.getTenantId()).thenReturn(1);
+    when(user.getUsername()).thenReturn("john");
+    when(user.getUserStatus()).thenReturn("ACTIVE");
+
+    when(userRepository.findByTenantIdIn(Set.of(1)))
+            .thenReturn(Set.of(user));
+
+    // ---------- User Group ----------
+    UserGroupInstanceOpalDetail ug = mock(UserGroupInstanceOpalDetail.class);
+
+    when(ug.getTenantCode()).thenReturn(defaultTenantName);
+    when(ug.getResourceTypeId()).thenReturn(100);
+    when(ug.getCode()).thenReturn("UG1");
+    when(ug.getId()).thenReturn(500);
+
+    when(userGroupInstanceRepository.findByTenantIdIn(Set.of(1)))
+            .thenReturn(Set.of(ug));
+
+    // ---------- User Group Member ----------
+    UserGroupInstanceMemberOpalDetail member =
+            mock(UserGroupInstanceMemberOpalDetail.class);
+
+    when(member.getUserGroupInstanceCode()).thenReturn("UG1");
+    when(member.getUsername()).thenReturn("john");
+    when(member.getStatus()).thenReturn("ACTIVE");
+
+    when(userGroupInstanceMemberRepository.findByTenantIdIn(Set.of(1)))
+            .thenReturn(Set.of(member));
+
+    // ---------- Resource Instance ----------
+    ResourceInstanceOpalDetail instance =
+            mock(ResourceInstanceOpalDetail.class);
+
+    when(instance.getId()).thenReturn(10);
+    when(instance.getCode()).thenReturn("INSTANCE1");
+    when(instance.getResourceTypeId()).thenReturn(100);
+    when(instance.getTenantId()).thenReturn(1);
+
+    when(resourceInstanceRepository.findByResourceTypeIdIn(Set.of(100)))
+            .thenReturn(Set.of(instance));
+
+    // ---------- Relation ----------
+    when(u2RRelationRepository.findByResourceTypeIdIn(Set.of(100)))
+            .thenReturn(Set.of(1000));
+
+    // ---------- Action Mapping ----------
+    U2RRelationActionMappingOpalDetail action =
+            mock(U2RRelationActionMappingOpalDetail.class);
+
+    when(action.getResourceTypeId()).thenReturn(100);
+    when(action.getCode()).thenReturn("READ");
+    when(action.getAction()).thenReturn("ALLOW");
+
+    when(u2RRelationActionRepository.findByU2RRelationIdIn(Set.of(1000)))
+            .thenReturn(Set.of(action));
+
+    // ---------- User Mapping ----------
+    U2RRelationUserMappingOpalDetail mapping =
+            mock(U2RRelationUserMappingOpalDetail.class);
+
+    when(mapping.getResourceInstanceCode()).thenReturn("INSTANCE1");
+    when(mapping.getRelation()).thenReturn("READ");
+    when(mapping.getUsername()).thenReturn("john");
+    when(mapping.getStatus()).thenReturn("ACTIVE");
+
+    when(u2RRelationUserMappingRepository.findByU2RRelationIdIn(Set.of(1000)))
+            .thenReturn(Set.of(mapping));
+
+    // ---------- Derivations ----------
+    when(relationDerivationRepository.findByResourceTypeIdIn(Set.of(100)))
+            .thenReturn(Collections.emptySet());
+
+    // ---------- Execute ----------
+    OpalDataDTO dto = service.getData(topicCode);
+
+    // ---------- Verify ----------
+    assertThat(dto).isNotNull();
+    assertThat(dto.getOpalData()).isNotNull();
+
+    verify(resourceInstanceRepository).findByResourceTypeIdIn(Set.of(100));
+    verify(userGroupInstanceRepository).findByTenantIdIn(Set.of(1));
+    verify(userGroupInstanceMemberRepository).findByTenantIdIn(Set.of(1));
+}
