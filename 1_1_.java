@@ -30,9 +30,8 @@ public class ServiceRegistrationListener implements ApplicationListener<Applicat
                 log.warn("No PEP endpoints or registration config found to register.");
                 return;
             }
-            log.info("Registering service with PAP using merged definitions: {}", sentinelProps.getServiceCode());
+            log.info("Registering service configs with PAP for service: {}", sentinelProps.getServiceCode());
 
-            // Convert map directly into valid JSON string
             String jsonPayload = objectMapper.writeValueAsString(registrationPayload);
             pepRegistrationClient.register(jsonPayload);
 
@@ -44,30 +43,25 @@ public class ServiceRegistrationListener implements ApplicationListener<Applicat
         }
     }
 
-    /**
-     * Aggregates endpoint mappings directly without the outer version wrapper.
-     */
     public Map<String, Object> buildUnifiedRegistration() throws Exception {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
-        // 1. Single-module backward compatibility: check for standalone registration.json
-        Resource fullRes = resolver.getResource("classpath:META-INF/pep-sdk/registration.json");
-        if (fullRes.exists()) {
-            try (InputStream in = fullRes.getInputStream()) {
-                Map<String, Object> fullJson = objectMapper.readValue(in, new TypeReference<>() {});
-                if (hasEndpoints(fullJson)) {
-                    // If fullJson has an outer version key (e.g., {"v5.0.1": { paths... }}), unwrap it
-                    for (Map.Entry<String, Object> entry : fullJson.entrySet()) {
-                        if (entry.getValue() instanceof Map<?, ?> inner) {
-                            return (Map<String, Object>) inner;
-                        }
-                    }
-                    return fullJson;
+        // 1. Resolve version from service-meta.json or SentinelPepProperties
+        String version = sentinelProps.getVersion();
+        Resource metaRes = resolver.getResource("classpath:META-INF/pep-sdk/service-meta.json");
+        if (metaRes.exists()) {
+            try (InputStream in = metaRes.getInputStream()) {
+                Map<String, String> meta = objectMapper.readValue(in, new TypeReference<>() {});
+                if (meta.containsKey("serviceVersion") && !meta.get("serviceVersion").isBlank()) {
+                    version = meta.get("serviceVersion");
                 }
             }
         }
+        if (version == null || version.isBlank()) {
+            version = "v1.0.0";
+        }
 
-        // 2. Multi-module mode: aggregate all fragment endpoint definitions
+        // 2. Discover all endpoint fragments generated across submodule JARs
         Resource[] fragments = resolver.getResources("classpath*:META-INF/pep-sdk/fragments/*-endpoints.json");
         Map<String, Object> mergedPaths = new LinkedHashMap<>();
 
@@ -75,20 +69,35 @@ public class ServiceRegistrationListener implements ApplicationListener<Applicat
             log.debug("Merging PEP endpoint fragment from: {}", fragment.getFilename());
             try (InputStream in = fragment.getInputStream()) {
                 Map<String, Object> paths = objectMapper.readValue(in, new TypeReference<>() {});
-                mergedPaths.putAll(paths);
+                for (Map.Entry<String, Object> entry : paths.entrySet()) {
+                    String path = entry.getKey().startsWith("/") ? entry.getKey() : "/" + entry.getKey();
+                    mergedPaths.put(path, entry.getValue());
+                }
             }
         }
 
-        return mergedPaths;
-    }
-
-    private boolean hasEndpoints(Map<String, Object> json) {
-        if (json == null || json.isEmpty()) return false;
-        for (Object val : json.values()) {
-            if (val instanceof Map<?, ?> m && !m.isEmpty()) {
-                return true;
+        // 3. Fallback: single-module registration.json (e.g. dummy-service)
+        if (mergedPaths.isEmpty()) {
+            Resource fullRes = resolver.getResource("classpath:META-INF/pep-sdk/registration.json");
+            if (fullRes.exists()) {
+                try (InputStream in = fullRes.getInputStream()) {
+                    Map<String, Object> fullJson = objectMapper.readValue(in, new TypeReference<>() {});
+                    // If fullJson already starts with a version key (e.g. {"v5.0.1": { ... }}), return directly
+                    for (String key : fullJson.keySet()) {
+                        if (key.matches("^v?\\d+\\.\\d+\\.\\d+.*")) {
+                            return fullJson;
+                        }
+                    }
+                    mergedPaths.putAll(fullJson);
+                }
             }
         }
-        return false;
+
+        if (mergedPaths.isEmpty()) {
+            return Map.of();
+        }
+
+        // PAP ServiceConfigDTO expects { "<service_version>": { "<endpoint_path>": { "<METHOD>": ... } } }
+        return Map.of(version, mergedPaths);
     }
 }
